@@ -5,6 +5,7 @@
 
 //for glm::value_ptr() :
 #include <glm/gtc/type_ptr.hpp>
+#include "load_save_png.hpp"
 
 #include <random>
 
@@ -16,7 +17,17 @@ PlayMode::PlayMode() {
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
 
+
+
+	//load_png(std::string filename, glm::uvec2 *size, std::vector< glm::u8vec4 > *data, OriginLocation origin)
+	glm::uvec2 frowny_size;
+	std::vector< glm::u8vec4 > frowny_data;
+	OriginLocation frowny_ol = OriginLocation::LowerLeftOrigin;
+	load_png("frowny.png", &frowny_size, &frowny_data, frowny_ol);
+	// printf("%d\n", FP_RND_DOWN)
+
 	//Also, *don't* use these tiles in your game:
+
 
 	{ //use tiles 0-16 as some weird dot pattern thing:
 		std::array< uint8_t, 8*8 > distance;
@@ -187,8 +198,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	}
 
 	//background scroll:
-	ppu.background_position.x = int32_t(-0.5f * player_at.x);
-	ppu.background_position.y = int32_t(-0.5f * player_at.y);
+	// ppu.background_position.x = int32_t(-0.5f * player_at.x);
+	// ppu.background_position.y = int32_t(-0.5f * player_at.y);
 
 	//player sprite:
 	ppu.sprites[0].x = int8_t(player_at.x);
