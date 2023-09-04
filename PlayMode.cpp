@@ -6,6 +6,7 @@
 //for glm::value_ptr() :
 #include <glm/gtc/type_ptr.hpp>
 #include "load_save_png.hpp"
+#include "data_path.hpp"
 
 #include <random>
 
@@ -18,13 +19,35 @@ PlayMode::PlayMode() {
 	//   and check that script into your repository.
 
 
-
-	//load_png(std::string filename, glm::uvec2 *size, std::vector< glm::u8vec4 > *data, OriginLocation origin)
 	glm::uvec2 frowny_size;
 	std::vector< glm::u8vec4 > frowny_data;
 	OriginLocation frowny_ol = OriginLocation::LowerLeftOrigin;
-	load_png("frowny.png", &frowny_size, &frowny_data, frowny_ol);
-	// printf("%d\n", FP_RND_DOWN)
+	std::string frowny_path = data_path("sprites/frowny.png");
+	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
+	
+	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
+	// int test0 = (int)frowny_data.at(0)[0];
+	// int test1 = (int)frowny_data.at(0)[1];
+	// int test2 = (int)frowny_data.at(0)[2];
+	// int test3 = (int)frowny_data.at(0)[3];
+
+	ppu.palette_table[0] = {
+		glm::u8vec4(0xff, 0x00, 0xff, 0x00),
+		glm::u8vec4(0x00, 0xff, 0x00, 0xff),
+		glm::u8vec4(0x00, 0xff, 0xff, 0x00),
+		glm::u8vec4(0x00, 0xff, 0x00, 0xff),
+	};
+
+	
+
+
+	
+
+	
+	
+	
+
+
 
 	//Also, *don't* use these tiles in your game:
 
@@ -82,12 +105,12 @@ PlayMode::PlayMode() {
 	};
 
 	//makes the outside of tiles 0-16 solid:
-	ppu.palette_table[0] = {
-		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	};
+	// ppu.palette_table[0] = {
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// };
 
 	//makes the center of tiles 0-16 solid:
 	ppu.palette_table[1] = {
