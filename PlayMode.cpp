@@ -7,7 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include "load_save_png.hpp"
 #include "data_path.hpp"
-
+#include <map>
 #include <random>
 
 PlayMode::PlayMode() {
@@ -18,25 +18,109 @@ PlayMode::PlayMode() {
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
 
+	
+	// uint32_t last_8_mask = 255;
+
+
+
 
 	glm::uvec2 frowny_size;
 	std::vector< glm::u8vec4 > frowny_data;
 	OriginLocation frowny_ol = OriginLocation::LowerLeftOrigin;
 	std::string frowny_path = data_path("sprites/frowny.png");
 	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
-	
-	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
-	// int test0 = (int)frowny_data.at(0)[0];
-	// int test1 = (int)frowny_data.at(0)[1];
-	// int test2 = (int)frowny_data.at(0)[2];
-	// int test3 = (int)frowny_data.at(0)[3];
 
-	ppu.palette_table[0] = {
-		glm::u8vec4(0xff, 0x00, 0xff, 0x00),
-		glm::u8vec4(0x00, 0xff, 0x00, 0xff),
-		glm::u8vec4(0x00, 0xff, 0xff, 0x00),
-		glm::u8vec4(0x00, 0xff, 0x00, 0xff),
-	};
+	int size_from_data = (int)frowny_data.size(); 
+	int size_from_size = (int)(frowny_size.x * frowny_size.y);
+
+	std::cout << "size_from_data: " << size_from_data << std::endl;
+	std::cout << "frowny_data.size(): " << frowny_data.size() << std::endl;
+	// size_from_data: 0
+	// frowny_data.size(): 1024
+
+	std::cout << "frowny_size.x: " << frowny_size.x << " frowny_size.y: " << frowny_size.y << std::endl;
+	std::cout << "frowny_size.x * frowny_size.y: " << frowny_size.x * frowny_size.y << std::endl;
+	std::cout << "(int)(frowny_size.x * frowny_size.y): " << (int)(frowny_size.x * frowny_size.y) << std::endl;
+	std::cout << "size_from_size: " << size_from_size << std::endl;
+	// frowny_size.x: 32 frowny_size.y: 32
+	// frowny_size.x * frowny_size.y: 1024
+	// (int)(frowny_size.x * frowny_size.y): 1024
+	// size_from_size: 73896
+
+	
+	std::map<uint32_t, int> map_colors_to_palette_indices;
+	uint32_t checking_color;
+	int palette_index = 0;
+	// std::cout << "frowny_data.size(): " << frowny_data.size() << std::endl;
+	
+	
+	std::cout << "----" << std::endl;
+	for(int i=0; i<(int)(frowny_size.x * frowny_size.y); i++){
+		
+		
+		checking_color = frowny_data.at(i)[0];
+		std::cout << (int)checking_color << std::endl;
+
+		// checking_color = frowny_data.at(i)[0] | (frowny_data.at(i)[1] << 8) | 
+		// 	(frowny_data.at(i)[2] << 16) | (frowny_data.at(i)[3] << 24);
+		// // if we haven't encountered this color yet
+		// std::cout << (int)checking_color << std::endl;
+		// if (!map_colors_to_palette_indices.count(checking_color)){
+		// 	map_colors_to_palette_indices[checking_color] = palette_index;
+		// 	palette_index++;
+		// }
+	}
+	std::cout << palette_index << std::endl;
+
+	for (const auto& pair : map_colors_to_palette_indices) {
+        std::cout << (int)pair.first << " : " << (int)pair.second << std::endl;
+    }
+	// uint32_t test0 = frowny_data.at(200)[0];
+	// uint32_t test1 = frowny_data.at(200)[1];
+	// uint32_t test2 = frowny_data.at(200)[2];
+	// uint32_t test3 = frowny_data.at(200)[3];
+	// std::cout << (int)test0 << std::endl;
+	// std::cout << (int)test1 << std::endl;
+	// std::cout << (int)test2 << std::endl;
+	// std::cout << (int)test3 << std::endl;
+
+
+	// uint32_t test4 = test0 | (test1 << 8) | (test2 << 16) | (test3 << 24);
+	// std::cout << (int)test4 << std::endl;
+
+	// std::cout << (int)(test4 & last_8_mask) << std::endl;
+	// std::cout << (int)((test4 >> 8) & last_8_mask) << std::endl;
+	// std::cout << (int)((test4 >> 16) & last_8_mask) << std::endl;
+	// std::cout << (int)((test4 >> 24) & last_8_mask) << std::endl;
+
+
+	// std::cout << frowny_data.size() << std::endl;
+
+	// solution for determining if a key exists in a hash map comes from:
+	// https://stackoverflow.com/questions/3136520/determine-if-map-contains-a-value-for-a-key
+	// int one_pixel_color;
+	
+	
+	
+
+	// int palette_index_iter = 0;
+
+
+	// std::map<glm::u8vec4, int> map_colors_to_palette_indices;
+	// for(int i=0; i<fd_size; i++){
+	// 	// scan for "new" colors
+	// 	glm::u8vec4 color_check = frowny_data.at(i);
+	// 	// if the color already exists in the map
+		
+	// }
+	// std::cout << map_colors_to_palette_indices.size() << std::endl;
+
+	// ppu.palette_table[0] = {
+	// 	glm::u8vec4(0xff, 0x00, 0xff, 0xff),
+	// 	glm::u8vec4(0x00, 0xff, 0x00, 0xff),
+	// 	glm::u8vec4(0x00, 0xff, 0xff, 0xff),
+	// 	glm::u8vec4(0x00, 0xff, 0x00, 0xff),
+	// };
 
 	
 
