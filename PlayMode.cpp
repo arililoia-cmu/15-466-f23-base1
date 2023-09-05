@@ -10,6 +10,9 @@
 #include <map>
 #include <random>
 
+
+
+
 PlayMode::PlayMode() {
 	//TODO:
 	// you *must* use an asset pipeline of some sort to generate tiles.
@@ -19,108 +22,71 @@ PlayMode::PlayMode() {
 	//   and check that script into your repository.
 
 	
-	// uint32_t last_8_mask = 255;
-
-
-
 
 	glm::uvec2 frowny_size;
 	std::vector< glm::u8vec4 > frowny_data;
 	OriginLocation frowny_ol = OriginLocation::LowerLeftOrigin;
-	std::string frowny_path = data_path("sprites/frowny.png");
+	std::string frowny_path = data_path("sprites/frog8x8.png");
 	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
 
-	int size_from_data = (int)frowny_data.size(); 
-	int size_from_size = (int)(frowny_size.x * frowny_size.y);
-
-	std::cout << "size_from_data: " << size_from_data << std::endl;
-	std::cout << "frowny_data.size(): " << frowny_data.size() << std::endl;
-	// size_from_data: 0
-	// frowny_data.size(): 1024
-
-	std::cout << "frowny_size.x: " << frowny_size.x << " frowny_size.y: " << frowny_size.y << std::endl;
-	std::cout << "frowny_size.x * frowny_size.y: " << frowny_size.x * frowny_size.y << std::endl;
-	std::cout << "(int)(frowny_size.x * frowny_size.y): " << (int)(frowny_size.x * frowny_size.y) << std::endl;
-	std::cout << "size_from_size: " << size_from_size << std::endl;
-	// frowny_size.x: 32 frowny_size.y: 32
-	// frowny_size.x * frowny_size.y: 1024
-	// (int)(frowny_size.x * frowny_size.y): 1024
-	// size_from_size: 73896
-
-	
 	std::map<uint32_t, int> map_colors_to_palette_indices;
-	uint32_t checking_color;
 	int palette_index = 0;
-	// std::cout << "frowny_data.size(): " << frowny_data.size() << std::endl;
-	
-	
-	std::cout << "----" << std::endl;
-	for(int i=0; i<(int)(frowny_size.x * frowny_size.y); i++){
-		
-		
-		checking_color = frowny_data.at(i)[0];
-		std::cout << (int)checking_color << std::endl;
+	uint32_t hash_value;
+	//
+	std::array< uint8_t, 8 > bit0; 
+	std::array< uint8_t, 8 > bit1;
 
-		// checking_color = frowny_data.at(i)[0] | (frowny_data.at(i)[1] << 8) | 
-		// 	(frowny_data.at(i)[2] << 16) | (frowny_data.at(i)[3] << 24);
-		// // if we haven't encountered this color yet
-		// std::cout << (int)checking_color << std::endl;
-		// if (!map_colors_to_palette_indices.count(checking_color)){
-		// 	map_colors_to_palette_indices[checking_color] = palette_index;
-		// 	palette_index++;
-		// }
+	// zero out data to be safe
+	for (int i=0; i<8; i++){
+		bit0[i] = 0;
+		bit1[i] = 0;
 	}
-	std::cout << palette_index << std::endl;
 
-	for (const auto& pair : map_colors_to_palette_indices) {
-        std::cout << (int)pair.first << " : " << (int)pair.second << std::endl;
-    }
-	// uint32_t test0 = frowny_data.at(200)[0];
-	// uint32_t test1 = frowny_data.at(200)[1];
-	// uint32_t test2 = frowny_data.at(200)[2];
-	// uint32_t test3 = frowny_data.at(200)[3];
-	// std::cout << (int)test0 << std::endl;
-	// std::cout << (int)test1 << std::endl;
-	// std::cout << (int)test2 << std::endl;
-	// std::cout << (int)test3 << std::endl;
-
-
-	// uint32_t test4 = test0 | (test1 << 8) | (test2 << 16) | (test3 << 24);
-	// std::cout << (int)test4 << std::endl;
-
-	// std::cout << (int)(test4 & last_8_mask) << std::endl;
-	// std::cout << (int)((test4 >> 8) & last_8_mask) << std::endl;
-	// std::cout << (int)((test4 >> 16) & last_8_mask) << std::endl;
-	// std::cout << (int)((test4 >> 24) & last_8_mask) << std::endl;
-
-
-	// std::cout << frowny_data.size() << std::endl;
-
-	// solution for determining if a key exists in a hash map comes from:
-	// https://stackoverflow.com/questions/3136520/determine-if-map-contains-a-value-for-a-key
-	// int one_pixel_color;
-	
-	
-	
-
-	// int palette_index_iter = 0;
-
-
-	// std::map<glm::u8vec4, int> map_colors_to_palette_indices;
-	// for(int i=0; i<fd_size; i++){
-	// 	// scan for "new" colors
-	// 	glm::u8vec4 color_check = frowny_data.at(i);
-	// 	// if the color already exists in the map
+	for(int i=0; i<8; i++){
+		for (int j=0; j<8; j++){
+			
+			// create a hash value for seen colors to map them to colors in palettes
+			hash_value = (uint32_t)frowny_data.at((i*8)+j)[0] | ((uint32_t)frowny_data.at((i*8)+j)[1] << 8) | 
+				((uint32_t)frowny_data.at((i*8)+j)[2] << 16) | ((uint32_t)frowny_data.at((i*8)+j)[3] << 24);
 		
-	// }
-	// std::cout << map_colors_to_palette_indices.size() << std::endl;
 
-	// ppu.palette_table[0] = {
-	// 	glm::u8vec4(0xff, 0x00, 0xff, 0xff),
-	// 	glm::u8vec4(0x00, 0xff, 0x00, 0xff),
-	// 	glm::u8vec4(0x00, 0xff, 0xff, 0xff),
-	// 	glm::u8vec4(0x00, 0xff, 0x00, 0xff),
-	// };
+			// map colors to hash values to keep track of which colors are where in the palette
+			if (!map_colors_to_palette_indices.count(hash_value)){
+					map_colors_to_palette_indices[hash_value] = palette_index;
+					// set the palette table index for the sprite to the correct color
+					ppu.palette_table[7][palette_index] = glm::u8vec4(
+						frowny_data.at((i*8)+j)[0],
+						frowny_data.at((i*8)+j)[1],
+						frowny_data.at((i*8)+j)[2],
+						frowny_data.at((i*8)+j)[3]
+					);
+					palette_index++;
+			}
+			
+			// set bits based on the color value 
+			if (map_colors_to_palette_indices[hash_value] == 1){
+				bit0[i] |= 1;
+			}
+			else if (map_colors_to_palette_indices[hash_value] == 2){
+				bit1[i] |= 1;
+			}
+			else if (map_colors_to_palette_indices[hash_value] == 3){
+				bit0[i] |= 1;
+				bit1[i] |= 1;
+			}
+			
+			// shift left - determine the next bit in the row
+			bit0[i] <<= 1;
+			bit1[i] <<= 1;
+			
+		}
+	}
+
+	// set the sprite bits to the bits generated using the asset pipeline
+	ppu.tile_table[32].bit0 = bit0;
+	ppu.tile_table[32].bit1 = bit1;
+
+
 
 	
 
@@ -167,26 +133,7 @@ PlayMode::PlayMode() {
 	}
 
 	//use sprite 32 as a "player":
-	ppu.tile_table[32].bit0 = {
-		0b01111110,
-		0b11111111,
-		0b11111111,
-		0b11111111,
-		0b11111111,
-		0b11111111,
-		0b11111111,
-		0b01111110,
-	};
-	ppu.tile_table[32].bit1 = {
-		0b00000000,
-		0b00000000,
-		0b00011000,
-		0b00100100,
-		0b00000000,
-		0b00100100,
-		0b00000000,
-		0b00000000,
-	};
+	
 
 	//makes the outside of tiles 0-16 solid:
 	// ppu.palette_table[0] = {
@@ -204,13 +151,20 @@ PlayMode::PlayMode() {
 		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
 	};
 
-	//used for the player:
-	ppu.palette_table[7] = {
-		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-		glm::u8vec4(0xff, 0xff, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	};
+	//used for the player: (tile table 32)
+	// ppu.palette_table[7] = {
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	// 	glm::u8vec4(0xff, 0xff, 0x00, 0xff),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// };
+
+	// ppu.palette_table[7] = {
+	// 	glm::u8vec4(255, 0, 0, 255),
+	// 	glm::u8vec4(255, 0, 0, 255),
+	// 	glm::u8vec4(255, 0, 0, 255),
+	// 	glm::u8vec4(255, 0, 0, 255),
+	// };
 
 	//used for the misc other sprites:
 	ppu.palette_table[6] = {
