@@ -11,6 +11,49 @@
 #include <random>
 
 
+// struct Rooms {
+// };
+
+
+// also keep track of which pixels are where on the screen
+// void set_tile_uniform_color(int tile_index, int palette_index, int color_index){
+
+// 	std::array< uint8_t, 8 > bit0;
+// 	std::array< uint8_t, 8 > bit1;
+// 	// code for filling an array with 255/0 taken from here: 
+// 	// https://en.cppreference.com/w/cpp/algorithm/fill
+
+// 	// fill in the tiles uniformly 
+// 	if (color_index == 0){
+// 		std::fill(bit0, bit0 + bit0.size(), 0);
+// 		std::fill(bit1, bit1 + bit1.size(), 0);
+// 	}
+// 	else if (color_index == 1){
+// 		std::fill(bit0, bit0 + bit0.size(), 0);
+// 		std::fill(bit1, bit1 + bit1.size(), 255);
+// 	}
+// 	else if (color_index == 2){
+// 		std::fill(bit0, bit0 + bit0.size(), 255);
+// 		std::fill(bit1, bit1 + bit1.size(), 0);
+// 	}
+// 	else if (color_index == 3){
+// 		std::fill(bit0, bit0 + bit0.size(), 255);
+// 		std::fill(bit1, bit1 + bit1.size(), 255);
+// 	}
+
+// }
+
+struct Room {
+    std::vector<int> walls;
+
+    // Method to insert an element into the 'data' vector
+    void insert_wall(int wall_index) {
+        walls.push_back(wall_index);
+    }
+
+
+};
+
 
 
 PlayMode::PlayMode() {
@@ -87,11 +130,90 @@ PlayMode::PlayMode() {
 	ppu.tile_table[32].bit1 = bit1;
 
 
+	
+	// now working on the background
+	// allocate bare minimum number of assets for maze - just 2 tiles.
+	// first create bitplanes to use for each tile
+	std::array<uint8_t, 8> zeros_bitplane = {0,0,0,0,0,0,0,0};
+	std::array<uint8_t, 8> ones_bitplane = {1,1,1,1,1,1,1,1};
+
+	// then we establish tile 0 and 1 as the tiles to use for 
+	// black and white background squares, respectively
+	ppu.tile_table[0].bit0 = zeros_bitplane;
+	ppu.tile_table[0].bit1 = zeros_bitplane;
+
+	ppu.tile_table[1].bit0 = zeros_bitplane;
+	ppu.tile_table[0].bit1 = ones_bitplane;
+
+	// then we read in color from background_palette
+	// this idea was taken from a student in class - do not remember their name.
+	glm::uvec2 bg_palette_size;
+	std::vector< glm::u8vec4 > bg_palette_data;
+	OriginLocation bg_palette_ol = OriginLocation::LowerLeftOrigin;
+	std::string bg_palette_path = data_path("sprites/bg_palette.png");
+	load_png(bg_palette_path, &bg_palette_size, &bg_palette_data, bg_palette_ol);
+
+	// std::cout << (int)bg_palette_data.at(0)[0] << std::endl;
+	// std::cout << (int)bg_palette_data.at(1)[0] << std::endl;
+	// std::cout << (int)bg_palette_data.at(2)[0] << std::endl;
+	
+
+	// if time permits - put this code into a function
+	// establish palette table 5 as the one we use for the background
+	for(int i=0; i<4; i++){
+		ppu.palette_table[5][i] = glm::u8vec4(
+			bg_palette_data.at(i)[0],
+			bg_palette_data.at(i)[1],
+			bg_palette_data.at(i)[2],
+			bg_palette_data.at(i)[3]
+		);
+	}
+
+	// bring in background
+	// could avoid code replication by putting the above into a function and referencing
+	// palette table indices with pointers + some other stuff i think
+	glm::uvec2 bg_size;
+	std::vector< glm::u8vec4 > bg_data;
+	OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
+	std::string bg_path = data_path("sprites/background.png");
+	load_png(bg_path, &bg_size, &bg_data, bg_ol);
+
+	// set all background tiles to reference tile 0 in tile table
+	// and palette 6. 0b00100000000 = 1536
+	int ppubgpx = ppu.BackgroundWidth * ppu.BackgroundHeight;
+	for (int i=0; i<ppubgpx; i++){
+		ppu.background[i] = 1280;
+	}
 
 	
 
 
+	// int bg_num_pixels = bg_size.x * bg_size.y;
+	// for (int i=0; i<bg_num_pixels; i++){
+	// 	// all pixels will either be black or white
+	// 	// if the pixel is black
+	// 	if (bg_data.at(i)[0] == 0){
+
+	// 	}
+	// }
+
+
+
+
+	// // debugging code to print out background info
+	for (int i=0; i<16;i++){
+		std::cout << "background[" << i << "] palette index " << (int)((ppu.background[i] >> 8) & 7)  <<  " tile index " << (int)(ppu.background[i] & 255) << std::endl;
+	}
+
 	
+
+
+
+
+
+
+
+
 
 	
 	
@@ -102,35 +224,39 @@ PlayMode::PlayMode() {
 	//Also, *don't* use these tiles in your game:
 
 
-	{ //use tiles 0-16 as some weird dot pattern thing:
-		std::array< uint8_t, 8*8 > distance;
-		for (uint32_t y = 0; y < 8; ++y) {
-			for (uint32_t x = 0; x < 8; ++x) {
-				float d = glm::length(glm::vec2((x + 0.5f) - 4.0f, (y + 0.5f) - 4.0f));
-				d /= glm::length(glm::vec2(4.0f, 4.0f));
-				distance[x+8*y] = uint8_t(std::max(0,std::min(255,int32_t( 255.0f * d ))));
-			}
-		}
-		for (uint32_t index = 0; index < 16; ++index) {
-			PPU466::Tile tile;
-			uint8_t t = uint8_t((255 * index) / 16);
-			for (uint32_t y = 0; y < 8; ++y) {
-				uint8_t bit0 = 0;
-				uint8_t bit1 = 0;
-				for (uint32_t x = 0; x < 8; ++x) {
-					uint8_t d = distance[x+8*y];
-					if (d > t) {
-						bit0 |= (1 << x);
-					} else {
-						bit1 |= (1 << x);
-					}
-				}
-				tile.bit0[y] = bit0;
-				tile.bit1[y] = bit1;
-			}
-			ppu.tile_table[index] = tile;
-		}
-	}
+	// { //use tiles 0-16 as some weird dot pattern thing:
+	// 	std::array< uint8_t, 8*8 > distance;
+	// 	for (uint32_t y = 0; y < 8; ++y) {
+	// 		for (uint32_t x = 0; x < 8; ++x) {
+	// 			float d = glm::length(glm::vec2((x + 0.5f) - 4.0f, (y + 0.5f) - 4.0f));
+	// 			d /= glm::length(glm::vec2(4.0f, 4.0f));
+	// 			distance[x+8*y] = uint8_t(std::max(0,std::min(255,int32_t( 255.0f * d ))));
+	// 		}
+	// 	}
+	// 	for (uint32_t index = 0; index < 16; ++index) {
+	// 		PPU466::Tile tile;
+	// 		uint8_t t = uint8_t((255 * index) / 16);
+	// 		for (uint32_t y = 0; y < 8; ++y) {
+	// 			uint8_t bit0 = 0;
+	// 			uint8_t bit1 = 0;
+	// 			for (uint32_t x = 0; x < 8; ++x) {
+	// 				uint8_t d = distance[x+8*y];
+	// 				if (d > t) {
+	// 					bit0 |= (1 << x);
+	// 				} else {
+	// 					bit1 |= (1 << x);
+	// 				}
+	// 			}
+	// 			tile.bit0[y] = bit0;
+	// 			tile.bit1[y] = bit1;
+	// 		}
+	// 		ppu.tile_table[index] = tile;
+	// 	}
+	// }
+
+
+
+	
 
 	//use sprite 32 as a "player":
 	
@@ -144,12 +270,12 @@ PlayMode::PlayMode() {
 	// };
 
 	//makes the center of tiles 0-16 solid:
-	ppu.palette_table[1] = {
-		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-		glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	};
+	// ppu.palette_table[1] = {
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
+	// };
 
 	//used for the player: (tile table 32)
 	// ppu.palette_table[7] = {
@@ -242,21 +368,21 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//--- set ppu state based on game state ---
 
 	//background color will be some hsv-like fade:
-	ppu.background_color = glm::u8vec4(
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 0.0f / 3.0f) ) ) ))),
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 1.0f / 3.0f) ) ) ))),
-		std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 2.0f / 3.0f) ) ) ))),
-		0xff
-	);
+	// ppu.background_color = glm::u8vec4(
+	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 0.0f / 3.0f) ) ) ))),
+	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 1.0f / 3.0f) ) ) ))),
+	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 2.0f / 3.0f) ) ) ))),
+	// 	0xff
+	// );
 
 	//tilemap gets recomputed every frame as some weird plasma thing:
 	//NOTE: don't do this in your game! actually make a map or something :-)
-	for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
-		for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
-			//TODO: make weird plasma thing
-			ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
-		}
-	}
+	// for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
+	// 	for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
+	// 		//TODO: make weird plasma thing
+	// 		ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
+	// 	}
+	// }
 
 	//background scroll:
 	// ppu.background_position.x = int32_t(-0.5f * player_at.x);
