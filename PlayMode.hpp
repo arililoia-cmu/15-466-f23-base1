@@ -5,6 +5,24 @@
 
 #include <vector>
 #include <deque>
+#include <iostream>
+
+struct Room {
+    std::vector<int> walls;
+
+    // Method to insert an element into the 'data' vector
+    void insert_wall(int wall_index) {
+        walls.push_back(wall_index);
+    }
+
+	void print_wall(){
+		for (int i=0; i<walls.size(); i++){
+			std::cout << walls[i] << std::endl;
+		}
+	}
+
+
+};
 
 struct PlayMode : Mode {
 	PlayMode();
@@ -26,8 +44,11 @@ struct PlayMode : Mode {
 	//some weird background animation:
 	float background_fade = 0.0f;
 
+	Room myRoom;
 	//player position:
 	glm::vec2 player_at = glm::vec2(0.0f);
+
+
 
 	//----- drawing handled by PPU466 -----
 

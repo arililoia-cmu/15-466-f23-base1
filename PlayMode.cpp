@@ -43,16 +43,7 @@
 
 // }
 
-struct Room {
-    std::vector<int> walls;
 
-    // Method to insert an element into the 'data' vector
-    void insert_wall(int wall_index) {
-        walls.push_back(wall_index);
-    }
-
-
-};
 
 
 
@@ -188,14 +179,16 @@ PlayMode::PlayMode() {
 	
 
 
-	// int bg_num_pixels = bg_size.x * bg_size.y;
-	// for (int i=0; i<bg_num_pixels; i++){
-	// 	// all pixels will either be black or white
-	// 	// if the pixel is black
-	// 	if (bg_data.at(i)[0] == 0){
+	int bg_num_pixels = bg_size.x * bg_size.y;
+	for (int i=0; i<bg_num_pixels; i++){
+		// all pixels will either be black or white
+		// if the pixel is black
+		if (bg_data.at(i)[0] == 0){
+			myRoom.insert_wall(i);
+		}
+	}
 
-	// 	}
-	// }
+	myRoom.print_wall();
 
 
 
