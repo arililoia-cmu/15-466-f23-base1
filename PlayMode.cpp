@@ -191,32 +191,32 @@ PlayMode::PlayMode() {
 	bool p_r, p_g, p_b;
 
 	
-	for (int i=0; i<bg_size.x; i++){
-		std::cout << "new row" << std::endl;
-		for (int j=0; j<bg_size.y; j++){
+	for (int i=0; i<bg_size.y; i++){
+		
+		for (int j=0; j<bg_size.x; j++){
 			// std::cout << (int)(i*bg_size.y)+j << std::endl;
-			p_r = bg_data.at((i*bg_size.y)+j)[0] > 250;
-			p_g = bg_data.at((i*bg_size.y)+j)[1] > 250;
-			p_b = bg_data.at((i*bg_size.y)+j)[2] > 250;
+			p_r = bg_data.at((i*bg_size.x)+j)[0] > 250;
+			p_g = bg_data.at((i*bg_size.x)+j)[1] > 250;
+			p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
 
 			if (p_r && !p_g && !p_b){
 				// register red pixels as walls
-				myRoom.insert_wall(((i*2)*bg_size.y)+j);
+				myRoom.insert_wall(((i*2)*bg_size.x)+j);
 				// set the background to reference black tile
-				ppu.background[((i*2)*bg_size.y)+j] = 1280;
+				ppu.background[((i*2)*bg_size.x)+j] = 1280;
 			}
 			else if (p_g && !p_r && !p_b){
-				ppu.background[((i*2)*bg_size.y)+j] = 1281;
+				ppu.background[((i*2)*bg_size.x)+j] = 1281;
 			}
 			else if (p_b && !p_r && !p_g){
 				// set the background to reference white tile
-				ppu.background[((i*2)*bg_size.y)+j] = 1281;
+				ppu.background[((i*2)*bg_size.x)+j] = 1281;
 				// make the blue tile the starting point 
 				// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
 				myRoom.insert_starting_point(i*8, j*8);
 			}
 			else if (!p_g && !p_b && !p_r){
-				ppu.background[((i*2)*bg_size.y)+j] = 1282;
+				ppu.background[((i*2)*bg_size.x)+j] = 1282;
 				myRoom.insert_ending_point(i*8, j*8);
 				
 			}
@@ -226,6 +226,8 @@ PlayMode::PlayMode() {
 	}
 
 	ppu.background[960] = 1280;
+	player_at.x = myRoom.start_x;
+	player_at.y = myRoom.start_y;
 
 
 	// for (int i=0; i<bg_num_pixels; i++){		
@@ -437,7 +439,7 @@ void PlayMode::update(float elapsed) {
 	up.downs = 0;
 	down.downs = 0;
 
-	// std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
+	std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {

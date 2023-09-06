@@ -10,11 +10,29 @@
 
 struct Room {
     std::set<int> walls;
+	int start_x;
+	int start_y;
+	int end_x;
+	int end_y;
 
     // Method to insert an element into the 'data' vector
     void insert_wall(int wall_index) {
         walls.insert(wall_index);
     }
+
+	void insert_starting_point(int xpos, int ypos){
+		start_x = xpos;
+		start_y = ypos;
+	}
+
+	void insert_ending_point(int xpos, int ypos){
+		end_x = xpos;
+		end_y = ypos;
+	}
+
+	// bool is_pixel_end_pixel(int xpos, int ypos){
+
+	// }
 
 	bool is_pixel_in_wall(int xpos, int ypos){
 		// because each background tile is 8 bits
