@@ -123,7 +123,7 @@ PlayMode::PlayMode() {
 
 	
 	// now working on the background
-	// allocate bare minimum number of assets for maze - just 2 tiles.
+	// allocate bare minimum number of assets for maze - just 3 tiles.
 	// first create bitplanes to use for each tile
 	std::array<uint8_t, 8> zeros_bitplane = {0,0,0,0,0,0,0,0};
 	std::array<uint8_t, 8> ones_bitplane = {255,255,255,255,255,255,255,255};
@@ -135,6 +135,9 @@ PlayMode::PlayMode() {
 
 	ppu.tile_table[1].bit0 = zeros_bitplane;
 	ppu.tile_table[1].bit1 = ones_bitplane;
+
+	ppu.tile_table[2].bit0 = ones_bitplane;
+	ppu.tile_table[2].bit1 = ones_bitplane;
 
 	// then we read in color from background_palette
 	// this idea was taken from a student in class - do not remember their name.
@@ -152,6 +155,11 @@ PlayMode::PlayMode() {
 	// if time permits - put this code into a function
 	// establish palette table 5 as the one we use for the background
 	for(int i=0; i<4; i++){
+		std::cout << i << std::endl;
+		std::cout << (int)bg_palette_data.at(i)[0] << std::endl;
+		std::cout << (int)bg_palette_data.at(i)[1] << std::endl;
+		std::cout << (int)bg_palette_data.at(i)[2] << std::endl;
+		std::cout << (int)bg_palette_data.at(i)[3] << std::endl;
 		ppu.palette_table[5][i] = glm::u8vec4(
 			bg_palette_data.at(i)[0],
 			bg_palette_data.at(i)[1],
@@ -166,7 +174,7 @@ PlayMode::PlayMode() {
 	glm::uvec2 bg_size;
 	std::vector< glm::u8vec4 > bg_data;
 	OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
-	std::string bg_path = data_path("sprites/background.png");
+	std::string bg_path = data_path("sprites/bg3.png");
 	load_png(bg_path, &bg_size, &bg_data, bg_ol);
 
 	// set all background tiles to reference tile 1 in tile table
@@ -177,21 +185,89 @@ PlayMode::PlayMode() {
 		ppu.background[i] = 1281;
 	}
 
+	// int bg_num_pixels = bg_size.x * bg_size.y;
+	std::cout << "bg_size.x: " << bg_size.x << std::endl;
+	std::cout << "bg_size.y: " << bg_size.y << std::endl;
+	bool p_r, p_g, p_b;
+
 	
-	int bg_num_pixels = bg_size.x * bg_size.y;
-	for (int i=0; i<bg_num_pixels; i++){
-		// all pixels will either be black or white
-		// if the pixel is black
-		if (bg_data.at(i)[0] == 0){
-			// register black pixels as walls
-			myRoom.insert_wall(i);
-			// set the background to reference black tile
-			ppu.background[i] = 1280;
-		}else{
-			// set background to reference white tile
-			ppu.background[i] = 1281;
+	for (int i=0; i<bg_size.x; i++){
+		std::cout << "new row" << std::endl;
+		for (int j=0; j<bg_size.y; j++){
+			// std::cout << (int)(i*bg_size.y)+j << std::endl;
+			p_r = bg_data.at((i*bg_size.y)+j)[0] > 250;
+			p_g = bg_data.at((i*bg_size.y)+j)[1] > 250;
+			p_b = bg_data.at((i*bg_size.y)+j)[2] > 250;
+
+			if (p_r && !p_g && !p_b){
+				// register red pixels as walls
+				myRoom.insert_wall(((i*2)*bg_size.y)+j);
+				// set the background to reference black tile
+				ppu.background[((i*2)*bg_size.y)+j] = 1280;
+			}
+			else if (p_g && !p_r && !p_b){
+				ppu.background[((i*2)*bg_size.y)+j] = 1281;
+			}
+			else if (p_b && !p_r && !p_g){
+				// set the background to reference white tile
+				ppu.background[((i*2)*bg_size.y)+j] = 1281;
+				// make the blue tile the starting point 
+				// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
+				myRoom.insert_starting_point(i*8, j*8);
+			}
+			else if (!p_g && !p_b && !p_r){
+				ppu.background[((i*2)*bg_size.y)+j] = 1282;
+				myRoom.insert_ending_point(i*8, j*8);
+				
+			}
+
+
 		}
 	}
+
+	ppu.background[960] = 1280;
+
+
+	// for (int i=0; i<bg_num_pixels; i++){		
+	// 	// all pixels will either be black or white
+	// 	// if the pixel is black
+	// 	p_r = bg_data.at(i)[0] > 250;
+	// 	p_g = bg_data.at(i)[1] > 250;
+	// 	p_b = bg_data.at(i)[2] > 250;
+	// 	// if pixel is red
+	// 	if (p_r && !p_g && !p_b){
+	// 		// register black pixels as walls
+	// 		myRoom.insert_wall(i);
+	// 		// set the background to reference black tile
+	// 		ppu.background[i] = 1280;
+	// 	}
+	// 	// if pixel is blue
+	// 	else if (p_b && !p_r && !p_g){
+	// 		// set the background to reference white tile
+	// 		ppu.background[i] = 1281;
+	// 		// make the blue tile the starting point 
+	// 		// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
+	// 		myRoom.insert_starting_point(80, 0);
+	// 	}
+	// 	// if pixel is green
+	// 	else if (p_g && !p_b && !p_r ){
+	// 		// set background to reference white tile
+	// 		ppu.background[i] = 1281;
+	// 	}
+	// 	// if pixel is black
+	// 	else if (!p_g && !p_b && !p_r){
+	// 		myRoom.insert_ending_point((i%64)*8, (i-(i%64))*8);
+	// 		ppu.background[i] = 1282;
+
+	// 	}
+	// }
+
+
+	player_at.x = myRoom.start_x;
+	std::cout << "myRoom.start_x: " << myRoom.start_x << std::endl;
+	player_at.y = myRoom.start_y;
+	std::cout << "myRoom.start_y: " << myRoom.start_y << std::endl;
+
 
 
 
@@ -199,9 +275,9 @@ PlayMode::PlayMode() {
 
 
 	// // debugging code to print out background info
-	for (int i=0; i<16;i++){
-		std::cout << "background[" << i << "] palette index " << (int)((ppu.background[i] >> 8) & 7)  <<  " tile index " << (int)(ppu.background[i] & 255) << std::endl;
-	}
+	// for (int i=0; i<16;i++){
+	// 	std::cout << "background[" << i << "] palette index " << (int)((ppu.background[i] >> 8) & 7)  <<  " tile index " << (int)(ppu.background[i] & 255) << std::endl;
+	// }
 
 	
 
@@ -346,8 +422,8 @@ void PlayMode::update(float elapsed) {
 
 	//slowly rotates through [0,1):
 	// (will be used to set background color)
-	background_fade += elapsed / 10.0f;
-	background_fade -= std::floor(background_fade);
+	// background_fade += elapsed / 10.0f;
+	// background_fade -= std::floor(background_fade);
 
 	constexpr float PlayerSpeed = 30.0f;
 	if (left.pressed) player_at.x -= PlayerSpeed * elapsed;
@@ -360,6 +436,8 @@ void PlayMode::update(float elapsed) {
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
+
+	// std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
