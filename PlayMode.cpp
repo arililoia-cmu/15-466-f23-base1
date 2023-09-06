@@ -126,7 +126,7 @@ PlayMode::PlayMode() {
 	// allocate bare minimum number of assets for maze - just 2 tiles.
 	// first create bitplanes to use for each tile
 	std::array<uint8_t, 8> zeros_bitplane = {0,0,0,0,0,0,0,0};
-	std::array<uint8_t, 8> ones_bitplane = {1,1,1,1,1,1,1,1};
+	std::array<uint8_t, 8> ones_bitplane = {255,255,255,255,255,255,255,255};
 
 	// then we establish tile 0 and 1 as the tiles to use for 
 	// black and white background squares, respectively
@@ -134,7 +134,7 @@ PlayMode::PlayMode() {
 	ppu.tile_table[0].bit1 = zeros_bitplane;
 
 	ppu.tile_table[1].bit0 = zeros_bitplane;
-	ppu.tile_table[0].bit1 = ones_bitplane;
+	ppu.tile_table[1].bit1 = ones_bitplane;
 
 	// then we read in color from background_palette
 	// this idea was taken from a student in class - do not remember their name.
@@ -169,26 +169,31 @@ PlayMode::PlayMode() {
 	std::string bg_path = data_path("sprites/background.png");
 	load_png(bg_path, &bg_size, &bg_data, bg_ol);
 
-	// set all background tiles to reference tile 0 in tile table
-	// and palette 6. 0b00100000000 = 1536
+	// set all background tiles to reference tile 1 in tile table
+	// and palette 6. 0b00100000001 = 1536
+	// to referene 
 	int ppubgpx = ppu.BackgroundWidth * ppu.BackgroundHeight;
 	for (int i=0; i<ppubgpx; i++){
-		ppu.background[i] = 1280;
+		ppu.background[i] = 1281;
 	}
 
 	
-
-
 	int bg_num_pixels = bg_size.x * bg_size.y;
 	for (int i=0; i<bg_num_pixels; i++){
 		// all pixels will either be black or white
 		// if the pixel is black
 		if (bg_data.at(i)[0] == 0){
+			// register black pixels as walls
 			myRoom.insert_wall(i);
+			// set the background to reference black tile
+			ppu.background[i] = 1280;
+		}else{
+			// set background to reference white tile
+			ppu.background[i] = 1281;
 		}
 	}
 
-	myRoom.print_wall();
+
 
 
 
