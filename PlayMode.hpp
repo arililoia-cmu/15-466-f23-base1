@@ -45,15 +45,8 @@ struct Room {
 		
 		int xpos_new = (xpos - (xpos % 8))/8;
 		int ypos_new = (ypos - (ypos % 8))/8;
-		// int xpos_new = xpos;
-		// int ypos_new = ypos;
+
 		int set_search_value = (xpos_new*32) + ypos_new;
-		// int set_search_value = ((xpos_new*32) + ypos_new)/8;
-		// int xpos_new = (xpos - (xpos % 8))/8;
-		// int ypos_new = (xpos - (xpos % 8))/8;
-		// int set_search_value = (xpos_new*64) + ypos_new;
-		
-		std::cout << "set_search_value: " << set_search_value << std::endl;
 
 		return walls.find(set_search_value) != walls.end();
 		// code for checking if set contains an element taken from this answer:

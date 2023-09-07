@@ -9,11 +9,8 @@
 #include "data_path.hpp"
 #include <map>
 #include <random>
+#include <filesystem>
 
-
-
-// struct Rooms {
-// };
 
 
 glm::uvec2 bg_size;
@@ -21,6 +18,20 @@ std::vector< glm::u8vec4 > bg_data;
 OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
 // std::string bg_path;
 int levels_index = 0;
+std::vector<std::string> filenames{
+		"backgrounds/bg3.png", 
+		"backgrounds/bg2.png",
+		"backgrounds/bg4.png",
+		"backgrounds/bg5.png",
+		"backgrounds/bg2.png",
+		"backgrounds/bg2.png",
+		"backgrounds/bg2.png",
+		"backgrounds/bg2.png",
+		"backgrounds/bg2.png",
+		"backgrounds/bg5.png",
+		"backgrounds/bg7.png"
+};
+
 
 
 // solution to error encountered when defining this function found in this answer:
@@ -43,8 +54,8 @@ void PlayMode::test(std::string bg_path){
 			p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
 
 			if (p_r && !p_g && !p_b){
-				// register red pixels as walls
-				std::cout << "wall: " << (i*bg_size.x)+j << std::endl;
+				// // register red pixels as walls
+				// std::cout << "wall: " << (i*bg_size.x)+j << std::endl;
 				myRoom.insert_wall((j*bg_size.x)+i);
 				// set the background to reference black tile
 				ppu.background[((i*2)*bg_size.x)+j] = 1280;
@@ -66,10 +77,6 @@ void PlayMode::test(std::string bg_path){
 		}
 	}
 
-	ppu.background[960] = 1280;
-	// std::cout <<  myRoom.end_x << std::endl;
-	// std::cout <<  myRoom.end_y << std::endl;
-
 	player_at.x = myRoom.start_x;
 	player_at.y = myRoom.start_y;
 	
@@ -85,16 +92,24 @@ PlayMode::PlayMode() {
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
 
+	// code taken directly from: 
+	// https://stackoverflow.com/questions/20346234/c-how-to-put-the-names-of-files-within-a-directory-into-a-vector
+	// https://stackoverflow.com/questions/20345378/c-printing-out-file-names-in-ascending-order
+	
+
+	// std::cout << (int)filenames.size() << std::endl;
+
 	glm::uvec2 frowny_size;
 	std::vector< glm::u8vec4 > frowny_data;
 	OriginLocation frowny_ol = OriginLocation::LowerLeftOrigin;
-	std::string frowny_path = data_path("sprites/frog8x8.png");
+	std::string frowny_path = data_path("sprites/smile.png");
 	load_png(frowny_path, &frowny_size, &frowny_data, frowny_ol);
 
 	std::map<uint32_t, int> map_colors_to_palette_indices;
 	int palette_index = 0;
 	uint32_t hash_value;
-	//
+
+	// declare bitmask components to use later
 	std::array< uint8_t, 8 > bit0; 
 	std::array< uint8_t, 8 > bit1;
 
@@ -174,8 +189,6 @@ PlayMode::PlayMode() {
 	std::string bg_palette_path = data_path("sprites/bg_palette.png");
 	load_png(bg_palette_path, &bg_palette_size, &bg_palette_data, bg_palette_ol);
 
-
-
 	// if time permits - put this code into a function
 	// establish palette table 5 as the one we use for the background
 	for(int i=0; i<4; i++){
@@ -194,14 +207,13 @@ PlayMode::PlayMode() {
 
 	// set all background tiles to reference tile 1 in tile table
 	// and palette 6. 0b00100000001 = 1536
-	// to referene 
 	int ppubgpx = ppu.BackgroundWidth * ppu.BackgroundHeight;
 	for (int i=0; i<ppubgpx; i++){
 		ppu.background[i] = 1281;
 	}
 
 
-	test("sprites/bg3.png");
+	test(filenames.at(levels_index));
 
 
 
@@ -262,9 +274,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 
 	
 	
-	// if ( (myRoom.end_x == player_at.x ) && (myRoom.end_y == player_at.y) ){
-	// 	std::cout << "die" << std::endl;
-	// }
+
 
 	return false;
 }
@@ -305,8 +315,13 @@ void PlayMode::update(float elapsed) {
 	down.downs = 0;
 	if ((myRoom.end_x-5 <= player_at.x) && (player_at.x <= myRoom.end_x+5) &&
 		(myRoom.end_y-5 <= player_at.y) && (player_at.y <= myRoom.end_y+5) ){
+			if (levels_index == (int)filenames.size() - 1){
+				levels_index = 0;
+			}else{
+				levels_index++;
+			}
+			test(filenames.at(levels_index));
 			
-			test("sprites/bg2.png");
 			
 	}
 	// std::cout << player_at.x << " " << myRoom.end_x << std::endl;
