@@ -121,7 +121,6 @@ PlayMode::PlayMode() {
 	ppu.tile_table[32].bit1 = bit1;
 
 
-	
 	// now working on the background
 	// allocate bare minimum number of assets for maze - just 3 tiles.
 	// first create bitplanes to use for each tile
@@ -171,11 +170,7 @@ PlayMode::PlayMode() {
 	// bring in background
 	// could avoid code replication by putting the above into a function and referencing
 	// palette table indices with pointers + some other stuff i think
-	glm::uvec2 bg_size;
-	std::vector< glm::u8vec4 > bg_data;
-	OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
-	std::string bg_path = data_path("sprites/bg3.png");
-	load_png(bg_path, &bg_size, &bg_data, bg_ol);
+	
 
 	// set all background tiles to reference tile 1 in tile table
 	// and palette 6. 0b00100000001 = 1536
@@ -185,12 +180,14 @@ PlayMode::PlayMode() {
 		ppu.background[i] = 1281;
 	}
 
-	// int bg_num_pixels = bg_size.x * bg_size.y;
-	std::cout << "bg_size.x: " << bg_size.x << std::endl;
-	std::cout << "bg_size.y: " << bg_size.y << std::endl;
+
+	glm::uvec2 bg_size;
+	std::vector< glm::u8vec4 > bg_data;
+	OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
+	std::string bg_path = data_path("sprites/bg3.png");
+	load_png(bg_path, &bg_size, &bg_data, bg_ol);
 	bool p_r, p_g, p_b;
 
-	
 	for (int i=0; i<bg_size.y; i++){
 		
 		for (int j=0; j<bg_size.x; j++){
@@ -213,162 +210,22 @@ PlayMode::PlayMode() {
 				ppu.background[((i*2)*bg_size.x)+j] = 1281;
 				// make the blue tile the starting point 
 				// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
-				myRoom.insert_starting_point(i*8, j*8);
+				myRoom.insert_starting_point(j*8, i*8);
 			}
 			else if (!p_g && !p_b && !p_r){
 				ppu.background[((i*2)*bg_size.x)+j] = 1282;
-				myRoom.insert_ending_point(i*8, j*8);
-				
+				myRoom.insert_ending_point(j*8, i*8);
 			}
-
-
 		}
 	}
 
 	ppu.background[960] = 1280;
+	std::cout <<  myRoom.end_x << std::endl;
+	std::cout <<  myRoom.end_y << std::endl;
+
 	player_at.x = myRoom.start_x;
 	player_at.y = myRoom.start_y;
 
-
-	// for (int i=0; i<bg_num_pixels; i++){		
-	// 	// all pixels will either be black or white
-	// 	// if the pixel is black
-	// 	p_r = bg_data.at(i)[0] > 250;
-	// 	p_g = bg_data.at(i)[1] > 250;
-	// 	p_b = bg_data.at(i)[2] > 250;
-	// 	// if pixel is red
-	// 	if (p_r && !p_g && !p_b){
-	// 		// register black pixels as walls
-	// 		myRoom.insert_wall(i);
-	// 		// set the background to reference black tile
-	// 		ppu.background[i] = 1280;
-	// 	}
-	// 	// if pixel is blue
-	// 	else if (p_b && !p_r && !p_g){
-	// 		// set the background to reference white tile
-	// 		ppu.background[i] = 1281;
-	// 		// make the blue tile the starting point 
-	// 		// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
-	// 		myRoom.insert_starting_point(80, 0);
-	// 	}
-	// 	// if pixel is green
-	// 	else if (p_g && !p_b && !p_r ){
-	// 		// set background to reference white tile
-	// 		ppu.background[i] = 1281;
-	// 	}
-	// 	// if pixel is black
-	// 	else if (!p_g && !p_b && !p_r){
-	// 		myRoom.insert_ending_point((i%64)*8, (i-(i%64))*8);
-	// 		ppu.background[i] = 1282;
-
-	// 	}
-	// }
-
-
-	player_at.x = myRoom.start_x;
-	std::cout << "myRoom.start_x: " << myRoom.start_x << std::endl;
-	player_at.y = myRoom.start_y;
-	std::cout << "myRoom.start_y: " << myRoom.start_y << std::endl;
-
-
-
-
-
-
-
-	// // debugging code to print out background info
-	// for (int i=0; i<16;i++){
-	// 	std::cout << "background[" << i << "] palette index " << (int)((ppu.background[i] >> 8) & 7)  <<  " tile index " << (int)(ppu.background[i] & 255) << std::endl;
-	// }
-
-	
-
-
-
-
-
-
-
-
-
-	
-	
-	
-
-
-
-	//Also, *don't* use these tiles in your game:
-
-
-	// { //use tiles 0-16 as some weird dot pattern thing:
-	// 	std::array< uint8_t, 8*8 > distance;
-	// 	for (uint32_t y = 0; y < 8; ++y) {
-	// 		for (uint32_t x = 0; x < 8; ++x) {
-	// 			float d = glm::length(glm::vec2((x + 0.5f) - 4.0f, (y + 0.5f) - 4.0f));
-	// 			d /= glm::length(glm::vec2(4.0f, 4.0f));
-	// 			distance[x+8*y] = uint8_t(std::max(0,std::min(255,int32_t( 255.0f * d ))));
-	// 		}
-	// 	}
-	// 	for (uint32_t index = 0; index < 16; ++index) {
-	// 		PPU466::Tile tile;
-	// 		uint8_t t = uint8_t((255 * index) / 16);
-	// 		for (uint32_t y = 0; y < 8; ++y) {
-	// 			uint8_t bit0 = 0;
-	// 			uint8_t bit1 = 0;
-	// 			for (uint32_t x = 0; x < 8; ++x) {
-	// 				uint8_t d = distance[x+8*y];
-	// 				if (d > t) {
-	// 					bit0 |= (1 << x);
-	// 				} else {
-	// 					bit1 |= (1 << x);
-	// 				}
-	// 			}
-	// 			tile.bit0[y] = bit0;
-	// 			tile.bit1[y] = bit1;
-	// 		}
-	// 		ppu.tile_table[index] = tile;
-	// 	}
-	// }
-
-
-
-	
-
-	//use sprite 32 as a "player":
-	
-
-	//makes the outside of tiles 0-16 solid:
-	// ppu.palette_table[0] = {
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// };
-
-	//makes the center of tiles 0-16 solid:
-	// ppu.palette_table[1] = {
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// };
-
-	//used for the player: (tile table 32)
-	// ppu.palette_table[7] = {
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0x00),
-	// 	glm::u8vec4(0xff, 0xff, 0x00, 0xff),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// 	glm::u8vec4(0x00, 0x00, 0x00, 0xff),
-	// };
-
-	// ppu.palette_table[7] = {
-	// 	glm::u8vec4(255, 0, 0, 255),
-	// 	glm::u8vec4(255, 0, 0, 255),
-	// 	glm::u8vec4(255, 0, 0, 255),
-	// 	glm::u8vec4(255, 0, 0, 255),
-	// };
-
-	//used for the misc other sprites:
 	ppu.palette_table[6] = {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
 		glm::u8vec4(0x88, 0x88, 0xff, 0xff),
@@ -417,6 +274,12 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	}
 
+
+	
+	// if ( (myRoom.end_x == player_at.x ) && (myRoom.end_y == player_at.y) ){
+	// 	std::cout << "die" << std::endl;
+	// }
+
 	return false;
 }
 
@@ -438,8 +301,13 @@ void PlayMode::update(float elapsed) {
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
-
-	std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
+	if ((myRoom.end_x-5 <= player_at.x) && (player_at.x <= myRoom.end_x+5) &&
+		(myRoom.end_y-5 <= player_at.y) && (player_at.y <= myRoom.end_y+5) ){
+		std::cout << "DIE" << std::endl;
+	}
+	std::cout << player_at.x << " " << myRoom.end_x << std::endl;
+	std::cout << player_at.y << " " << myRoom.end_y << std::endl;
+	// std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
