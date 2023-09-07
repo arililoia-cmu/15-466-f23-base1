@@ -340,14 +340,13 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	ppu.sprites[0].index = 32;
 	ppu.sprites[0].attributes = 7;
 
-	//some other misc sprites:
+
+
+	//move all the other sprites off the screen
 	for (uint32_t i = 1; i < 63; ++i) {
-		float amt = (i + 2.0f * background_fade) / 62.0f;
-		ppu.sprites[i].x = int8_t(0.5f * PPU466::ScreenWidth + std::cos( 2.0f * M_PI * amt * 5.0f + 0.01f * player_at.x) * 0.4f * PPU466::ScreenWidth);
-		ppu.sprites[i].y = int8_t(0.5f * PPU466::ScreenHeight + std::sin( 2.0f * M_PI * amt * 3.0f + 0.01f * player_at.y) * 0.4f * PPU466::ScreenWidth);
-		ppu.sprites[i].index = 32;
-		ppu.sprites[i].attributes = 6;
-		if (i % 2) ppu.sprites[i].attributes |= 0x80; //'behind' bit
+		ppu.sprites[i].x = int8_t(300);
+		ppu.sprites[i].y = int8_t(300);
+
 	}
 
 	//--- actually draw ---
