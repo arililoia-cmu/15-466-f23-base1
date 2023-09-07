@@ -15,10 +15,17 @@ struct Room {
 	int end_x;
 	int end_y;
 
+
     // Method to insert an element into the 'data' vector
     void insert_wall(int wall_index) {
         walls.insert(wall_index);
     }
+
+	void remove_walls(){
+		// https://cplusplus.com/reference/set/set/erase/
+		// code inspired by this documentation
+		walls.erase(walls.begin(), walls.end());
+	}
 
 	void insert_starting_point(int xpos, int ypos){
 		start_x = xpos;
@@ -35,11 +42,16 @@ struct Room {
 	// }
 
 	bool is_pixel_in_wall(int xpos, int ypos){
-		// because each background tile is 8 bits
-		// we round down to see if a pixel is inside a black tile
+		
 		int xpos_new = (xpos - (xpos % 8))/8;
-		int ypos_new = (xpos - (xpos % 8))/8;
-		int set_search_value = (xpos_new*64) + ypos_new;
+		int ypos_new = (ypos - (ypos % 8))/8;
+		// int xpos_new = xpos;
+		// int ypos_new = ypos;
+		int set_search_value = (xpos_new*32) + ypos_new;
+		// int set_search_value = ((xpos_new*32) + ypos_new)/8;
+		// int xpos_new = (xpos - (xpos % 8))/8;
+		// int ypos_new = (xpos - (xpos % 8))/8;
+		// int set_search_value = (xpos_new*64) + ypos_new;
 		
 		std::cout << "set_search_value: " << set_search_value << std::endl;
 
@@ -62,7 +74,7 @@ struct PlayMode : Mode {
 
 	//----- game state -----
 
-	virtual void test();
+	virtual void test(std::string bg_path);
 
 	//input tracking:
 	struct Button {

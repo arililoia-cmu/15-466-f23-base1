@@ -11,6 +11,7 @@
 #include <random>
 
 
+
 // struct Rooms {
 // };
 
@@ -18,10 +19,18 @@
 glm::uvec2 bg_size;
 std::vector< glm::u8vec4 > bg_data;
 OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
-std::string bg_path;
+// std::string bg_path;
+int levels_index = 0;
 
-void PlayMode::test(){
-	bg_path = data_path("sprites/bg3.png");
+
+// solution to error encountered when defining this function found in this answer:
+// https://stackoverflow.com/questions/22579666/error-out-of-line-definition-of-test-does-not-match-any-declaration-in-bdim
+void PlayMode::test(std::string bg_path){
+	// remove all the walls in a room first in case we're reloading
+	myRoom.remove_walls();
+
+	// import data
+	bg_path = data_path(bg_path);
 	load_png(bg_path, &bg_size, &bg_data, bg_ol);
 	bool p_r, p_g, p_b;
 
@@ -35,7 +44,8 @@ void PlayMode::test(){
 
 			if (p_r && !p_g && !p_b){
 				// register red pixels as walls
-				myRoom.insert_wall(((i*2)*bg_size.x)+j);
+				std::cout << "wall: " << (i*bg_size.x)+j << std::endl;
+				myRoom.insert_wall((j*bg_size.x)+i);
 				// set the background to reference black tile
 				ppu.background[((i*2)*bg_size.x)+j] = 1280;
 			}
@@ -62,37 +72,8 @@ void PlayMode::test(){
 
 	player_at.x = myRoom.start_x;
 	player_at.y = myRoom.start_y;
+	
 }
-
-// also keep track of which pixels are where on the screen
-// void set_tile_uniform_color(int tile_index, int palette_index, int color_index){
-
-// 	std::array< uint8_t, 8 > bit0;
-// 	std::array< uint8_t, 8 > bit1;
-// 	// code for filling an array with 255/0 taken from here: 
-// 	// https://en.cppreference.com/w/cpp/algorithm/fill
-
-// 	// fill in the tiles uniformly 
-// 	if (color_index == 0){
-// 		std::fill(bit0, bit0 + bit0.size(), 0);
-// 		std::fill(bit1, bit1 + bit1.size(), 0);
-// 	}
-// 	else if (color_index == 1){
-// 		std::fill(bit0, bit0 + bit0.size(), 0);
-// 		std::fill(bit1, bit1 + bit1.size(), 255);
-// 	}
-// 	else if (color_index == 2){
-// 		std::fill(bit0, bit0 + bit0.size(), 255);
-// 		std::fill(bit1, bit1 + bit1.size(), 0);
-// 	}
-// 	else if (color_index == 3){
-// 		std::fill(bit0, bit0 + bit0.size(), 255);
-// 		std::fill(bit1, bit1 + bit1.size(), 255);
-// 	}
-
-// }
-
-
 
 
 
@@ -103,8 +84,6 @@ PlayMode::PlayMode() {
 	// or, at least, if you do hardcode them like this,
 	//  make yourself a script that spits out the code that you paste in here
 	//   and check that script into your repository.
-
-	
 
 	glm::uvec2 frowny_size;
 	std::vector< glm::u8vec4 > frowny_data;
@@ -221,46 +200,10 @@ PlayMode::PlayMode() {
 		ppu.background[i] = 1281;
 	}
 
-	test();
+
+	test("sprites/bg3.png");
 
 
-	// glm::uvec2 bg_size;
-	// std::vector< glm::u8vec4 > bg_data;
-	// OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
-	// bg_path = data_path("sprites/bg3.png");
-	// load_png(bg_path, &bg_size, &bg_data, bg_ol);
-	// bool p_r, p_g, p_b;
-
-	// for (int i=0; i<bg_size.y; i++){
-		
-	// 	for (int j=0; j<bg_size.x; j++){
-	// 		// std::cout << (int)(i*bg_size.y)+j << std::endl;
-	// 		p_r = bg_data.at((i*bg_size.x)+j)[0] > 250;
-	// 		p_g = bg_data.at((i*bg_size.x)+j)[1] > 250;
-	// 		p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
-
-	// 		if (p_r && !p_g && !p_b){
-	// 			// register red pixels as walls
-	// 			myRoom.insert_wall(((i*2)*bg_size.x)+j);
-	// 			// set the background to reference black tile
-	// 			ppu.background[((i*2)*bg_size.x)+j] = 1280;
-	// 		}
-	// 		else if (p_g && !p_r && !p_b){
-	// 			ppu.background[((i*2)*bg_size.x)+j] = 1281;
-	// 		}
-	// 		else if (p_b && !p_r && !p_g){
-	// 			// set the background to reference white tile
-	// 			ppu.background[((i*2)*bg_size.x)+j] = 1281;
-	// 			// make the blue tile the starting point 
-	// 			// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
-	// 			myRoom.insert_starting_point(j*8, i*8);
-	// 		}
-	// 		else if (!p_g && !p_b && !p_r){
-	// 			ppu.background[((i*2)*bg_size.x)+j] = 1282;
-	// 			myRoom.insert_ending_point(j*8, i*8);
-	// 		}
-	// 	}
-	// }
 
 	// ppu.background[960] = 1280;
 	// // std::cout <<  myRoom.end_x << std::endl;
@@ -317,7 +260,7 @@ bool PlayMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size)
 		}
 	}
 
-
+	
 	
 	// if ( (myRoom.end_x == player_at.x ) && (myRoom.end_y == player_at.y) ){
 	// 	std::cout << "die" << std::endl;
@@ -332,12 +275,28 @@ void PlayMode::update(float elapsed) {
 	// (will be used to set background color)
 	// background_fade += elapsed / 10.0f;
 	// background_fade -= std::floor(background_fade);
-
+	// if(is_pixel_in_wall())
 	constexpr float PlayerSpeed = 30.0f;
-	if (left.pressed) player_at.x -= PlayerSpeed * elapsed;
-	if (right.pressed) player_at.x += PlayerSpeed * elapsed;
-	if (down.pressed) player_at.y -= PlayerSpeed * elapsed;
-	if (up.pressed) player_at.y += PlayerSpeed * elapsed;
+	if (left.pressed){
+		if (!myRoom.is_pixel_in_wall(player_at.x - PlayerSpeed * elapsed, player_at.y)){
+			player_at.x -= PlayerSpeed * elapsed;
+		}
+	} 
+	if (right.pressed){
+		if (!myRoom.is_pixel_in_wall((player_at.x + 8) + PlayerSpeed * elapsed, player_at.y)){
+			player_at.x += PlayerSpeed * elapsed;
+		}
+	} 
+	if (down.pressed){
+		if (!myRoom.is_pixel_in_wall(player_at.x, player_at.y - PlayerSpeed * elapsed)){
+			player_at.y -= PlayerSpeed * elapsed;
+		}
+	} 
+	if (up.pressed){
+		if (!myRoom.is_pixel_in_wall(player_at.x, (player_at.y + 8) + PlayerSpeed * elapsed)){
+			player_at.y += PlayerSpeed * elapsed;
+		}	
+	} 
 
 	//reset button press counters:
 	left.downs = 0;
@@ -346,7 +305,9 @@ void PlayMode::update(float elapsed) {
 	down.downs = 0;
 	if ((myRoom.end_x-5 <= player_at.x) && (player_at.x <= myRoom.end_x+5) &&
 		(myRoom.end_y-5 <= player_at.y) && (player_at.y <= myRoom.end_y+5) ){
-
+			
+			test("sprites/bg2.png");
+			
 	}
 	// std::cout << player_at.x << " " << myRoom.end_x << std::endl;
 	// std::cout << player_at.y << " " << myRoom.end_y << std::endl;
