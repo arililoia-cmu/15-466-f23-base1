@@ -62,6 +62,8 @@ struct PlayMode : Mode {
 
 	//----- game state -----
 
+	virtual void test();
+
 	//input tracking:
 	struct Button {
 		uint8_t downs = 0;

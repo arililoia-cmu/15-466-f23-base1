@@ -15,6 +15,55 @@
 // };
 
 
+glm::uvec2 bg_size;
+std::vector< glm::u8vec4 > bg_data;
+OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
+std::string bg_path;
+
+void PlayMode::test(){
+	bg_path = data_path("sprites/bg3.png");
+	load_png(bg_path, &bg_size, &bg_data, bg_ol);
+	bool p_r, p_g, p_b;
+
+	for (int i=0; i<bg_size.y; i++){
+		
+		for (int j=0; j<bg_size.x; j++){
+			// std::cout << (int)(i*bg_size.y)+j << std::endl;
+			p_r = bg_data.at((i*bg_size.x)+j)[0] > 250;
+			p_g = bg_data.at((i*bg_size.x)+j)[1] > 250;
+			p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
+
+			if (p_r && !p_g && !p_b){
+				// register red pixels as walls
+				myRoom.insert_wall(((i*2)*bg_size.x)+j);
+				// set the background to reference black tile
+				ppu.background[((i*2)*bg_size.x)+j] = 1280;
+			}
+			else if (p_g && !p_r && !p_b){
+				ppu.background[((i*2)*bg_size.x)+j] = 1281;
+			}
+			else if (p_b && !p_r && !p_g){
+				// set the background to reference white tile
+				ppu.background[((i*2)*bg_size.x)+j] = 1281;
+				// make the blue tile the starting point 
+				// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
+				myRoom.insert_starting_point(j*8, i*8);
+			}
+			else if (!p_g && !p_b && !p_r){
+				ppu.background[((i*2)*bg_size.x)+j] = 1282;
+				myRoom.insert_ending_point(j*8, i*8);
+			}
+		}
+	}
+
+	ppu.background[960] = 1280;
+	// std::cout <<  myRoom.end_x << std::endl;
+	// std::cout <<  myRoom.end_y << std::endl;
+
+	player_at.x = myRoom.start_x;
+	player_at.y = myRoom.start_y;
+}
+
 // also keep track of which pixels are where on the screen
 // void set_tile_uniform_color(int tile_index, int palette_index, int color_index){
 
@@ -146,19 +195,11 @@ PlayMode::PlayMode() {
 	std::string bg_palette_path = data_path("sprites/bg_palette.png");
 	load_png(bg_palette_path, &bg_palette_size, &bg_palette_data, bg_palette_ol);
 
-	// std::cout << (int)bg_palette_data.at(0)[0] << std::endl;
-	// std::cout << (int)bg_palette_data.at(1)[0] << std::endl;
-	// std::cout << (int)bg_palette_data.at(2)[0] << std::endl;
-	
+
 
 	// if time permits - put this code into a function
 	// establish palette table 5 as the one we use for the background
 	for(int i=0; i<4; i++){
-		std::cout << i << std::endl;
-		std::cout << (int)bg_palette_data.at(i)[0] << std::endl;
-		std::cout << (int)bg_palette_data.at(i)[1] << std::endl;
-		std::cout << (int)bg_palette_data.at(i)[2] << std::endl;
-		std::cout << (int)bg_palette_data.at(i)[3] << std::endl;
 		ppu.palette_table[5][i] = glm::u8vec4(
 			bg_palette_data.at(i)[0],
 			bg_palette_data.at(i)[1],
@@ -180,51 +221,53 @@ PlayMode::PlayMode() {
 		ppu.background[i] = 1281;
 	}
 
+	test();
 
-	glm::uvec2 bg_size;
-	std::vector< glm::u8vec4 > bg_data;
-	OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
-	std::string bg_path = data_path("sprites/bg3.png");
-	load_png(bg_path, &bg_size, &bg_data, bg_ol);
-	bool p_r, p_g, p_b;
 
-	for (int i=0; i<bg_size.y; i++){
+	// glm::uvec2 bg_size;
+	// std::vector< glm::u8vec4 > bg_data;
+	// OriginLocation bg_ol = OriginLocation::LowerLeftOrigin;
+	// bg_path = data_path("sprites/bg3.png");
+	// load_png(bg_path, &bg_size, &bg_data, bg_ol);
+	// bool p_r, p_g, p_b;
+
+	// for (int i=0; i<bg_size.y; i++){
 		
-		for (int j=0; j<bg_size.x; j++){
-			// std::cout << (int)(i*bg_size.y)+j << std::endl;
-			p_r = bg_data.at((i*bg_size.x)+j)[0] > 250;
-			p_g = bg_data.at((i*bg_size.x)+j)[1] > 250;
-			p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
+	// 	for (int j=0; j<bg_size.x; j++){
+	// 		// std::cout << (int)(i*bg_size.y)+j << std::endl;
+	// 		p_r = bg_data.at((i*bg_size.x)+j)[0] > 250;
+	// 		p_g = bg_data.at((i*bg_size.x)+j)[1] > 250;
+	// 		p_b = bg_data.at((i*bg_size.x)+j)[2] > 250;
 
-			if (p_r && !p_g && !p_b){
-				// register red pixels as walls
-				myRoom.insert_wall(((i*2)*bg_size.x)+j);
-				// set the background to reference black tile
-				ppu.background[((i*2)*bg_size.x)+j] = 1280;
-			}
-			else if (p_g && !p_r && !p_b){
-				ppu.background[((i*2)*bg_size.x)+j] = 1281;
-			}
-			else if (p_b && !p_r && !p_g){
-				// set the background to reference white tile
-				ppu.background[((i*2)*bg_size.x)+j] = 1281;
-				// make the blue tile the starting point 
-				// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
-				myRoom.insert_starting_point(j*8, i*8);
-			}
-			else if (!p_g && !p_b && !p_r){
-				ppu.background[((i*2)*bg_size.x)+j] = 1282;
-				myRoom.insert_ending_point(j*8, i*8);
-			}
-		}
-	}
+	// 		if (p_r && !p_g && !p_b){
+	// 			// register red pixels as walls
+	// 			myRoom.insert_wall(((i*2)*bg_size.x)+j);
+	// 			// set the background to reference black tile
+	// 			ppu.background[((i*2)*bg_size.x)+j] = 1280;
+	// 		}
+	// 		else if (p_g && !p_r && !p_b){
+	// 			ppu.background[((i*2)*bg_size.x)+j] = 1281;
+	// 		}
+	// 		else if (p_b && !p_r && !p_g){
+	// 			// set the background to reference white tile
+	// 			ppu.background[((i*2)*bg_size.x)+j] = 1281;
+	// 			// make the blue tile the starting point 
+	// 			// myRoom.insert_starting_point((i%64)*8, (i-(i%64))*8);
+	// 			myRoom.insert_starting_point(j*8, i*8);
+	// 		}
+	// 		else if (!p_g && !p_b && !p_r){
+	// 			ppu.background[((i*2)*bg_size.x)+j] = 1282;
+	// 			myRoom.insert_ending_point(j*8, i*8);
+	// 		}
+	// 	}
+	// }
 
-	ppu.background[960] = 1280;
-	std::cout <<  myRoom.end_x << std::endl;
-	std::cout <<  myRoom.end_y << std::endl;
+	// ppu.background[960] = 1280;
+	// // std::cout <<  myRoom.end_x << std::endl;
+	// // std::cout <<  myRoom.end_y << std::endl;
 
-	player_at.x = myRoom.start_x;
-	player_at.y = myRoom.start_y;
+	// player_at.x = myRoom.start_x;
+	// player_at.y = myRoom.start_y;
 
 	ppu.palette_table[6] = {
 		glm::u8vec4(0x00, 0x00, 0x00, 0x00),
@@ -303,36 +346,15 @@ void PlayMode::update(float elapsed) {
 	down.downs = 0;
 	if ((myRoom.end_x-5 <= player_at.x) && (player_at.x <= myRoom.end_x+5) &&
 		(myRoom.end_y-5 <= player_at.y) && (player_at.y <= myRoom.end_y+5) ){
-		std::cout << "DIE" << std::endl;
+
 	}
-	std::cout << player_at.x << " " << myRoom.end_x << std::endl;
-	std::cout << player_at.y << " " << myRoom.end_y << std::endl;
+	// std::cout << player_at.x << " " << myRoom.end_x << std::endl;
+	// std::cout << player_at.y << " " << myRoom.end_y << std::endl;
 	// std::cout << (int)player_at.x << " " << (int)player_at.y << std::endl;
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//--- set ppu state based on game state ---
-
-	//background color will be some hsv-like fade:
-	// ppu.background_color = glm::u8vec4(
-	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 0.0f / 3.0f) ) ) ))),
-	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 1.0f / 3.0f) ) ) ))),
-	// 	std::min(255,std::max(0,int32_t(255 * 0.5f * (0.5f + std::sin( 2.0f * M_PI * (background_fade + 2.0f / 3.0f) ) ) ))),
-	// 	0xff
-	// );
-
-	//tilemap gets recomputed every frame as some weird plasma thing:
-	//NOTE: don't do this in your game! actually make a map or something :-)
-	// for (uint32_t y = 0; y < PPU466::BackgroundHeight; ++y) {
-	// 	for (uint32_t x = 0; x < PPU466::BackgroundWidth; ++x) {
-	// 		//TODO: make weird plasma thing
-	// 		ppu.background[x+PPU466::BackgroundWidth*y] = ((x+y)%16);
-	// 	}
-	// }
-
-	//background scroll:
-	// ppu.background_position.x = int32_t(-0.5f * player_at.x);
-	// ppu.background_position.y = int32_t(-0.5f * player_at.y);
 
 	//player sprite:
 	ppu.sprites[0].x = int8_t(player_at.x);
