@@ -8,6 +8,9 @@
 #include <glm/glm.hpp>
 #include <array>
 
+#define SCREEN_HEIGHT_DIM 50
+#define SCREEN_WIDTH_DIM 100
+
 struct PPU466 {
 	PPU466();
 
@@ -24,8 +27,8 @@ struct PPU466 {
 	//The PPU's screen is 256x240:
 	// the origin -- pixel (0,0) -- is in the lower left
 	enum : uint32_t {
-		ScreenWidth = 256,
-		ScreenHeight = 240
+		ScreenWidth = SCREEN_WIDTH_DIM * 4,
+		ScreenHeight = SCREEN_HEIGHT_DIM * 4
 	};
 
 	//Background Color:
@@ -71,8 +74,8 @@ struct PPU466 {
 	// The PPU's background layer is made of 64x60 tiles (512 x 480 pixels).
 	// This is twice the size of the screen, to support scrolling.
 	enum : uint32_t {
-		BackgroundWidth = 64,
-		BackgroundHeight = 60
+		BackgroundWidth = SCREEN_WIDTH_DIM,
+		BackgroundHeight = SCREEN_HEIGHT_DIM
 	};
 
 	// The background is stored as a row-major grid of 16-bit values:
