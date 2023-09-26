@@ -118,11 +118,18 @@ void PPU466::draw(glm::uvec2 const &drawable_size) const {
 			(int32_t(drawable_size.y) - scale * int32_t(ScreenHeight)) / 2
 		);
 		glViewport(lower_left.x, lower_left.y, scale * ScreenWidth, scale * ScreenHeight);
+		std::cout << "drawable_size.x:  " << drawable_size.x << std::endl;
+		std::cout << "drawable_size.y:  " << drawable_size.y << std::endl;
+		std::cout << "ScreenWidth: " << ScreenWidth << std::endl;
+		std::cout << "ScreenHeight:  " << ScreenHeight << std::endl;
+
+
 	}
 
 	//build triangle strip representing background and sprites:
 
-	constexpr uint32_t TristripSize = uint32_t(6 * (BackgroundWidth * BackgroundHeight + decltype(sprites)().size()));
+	// constexpr uint32_t TristripSize = uint32_t(6 * (BackgroundWidth * BackgroundHeight + decltype(sprites)().size()));
+	constexpr uint32_t TristripSize = uint32_t(6 * (BackgroundWidth * BackgroundHeight));
 	std::vector< PPUDataStream::Vertex > triangle_strip;
 	triangle_strip.reserve(TristripSize);
 
@@ -141,18 +148,18 @@ void PPU466::draw(glm::uvec2 const &drawable_size) const {
 	};
 
 	//helper to draw the sprite list (used because we need to draw the 'behind' sprites, then the background, then the 'front' sprites:
-	auto draw_sprites = [this,&draw_tile](uint8_t priority) {
-		for (auto const &sprite : sprites) {
-			if ((sprite.attributes & 0x80) != priority) continue;
-			draw_tile(
-				glm::ivec2(sprite.x, sprite.y),
-				sprite.index,
-				sprite.attributes & 0x07 //just the palette index part
-			);
-		}
-	};
+	// auto draw_sprites = [this,&draw_tile](uint8_t priority) {
+	// 	for (auto const &sprite : sprites) {
+	// 		if ((sprite.attributes & 0x80) != priority) continue;
+	// 		draw_tile(
+	// 			glm::ivec2(sprite.x, sprite.y),
+	// 			sprite.index,
+	// 			sprite.attributes & 0x07 //just the palette index part
+	// 		);
+	// 	}
+	// };
 
-	draw_sprites(0x80); //draw sprites with priority == 1 ('behind' sprites)
+	// draw_sprites(0x80); //draw sprites with priority == 1 ('behind' sprites)
 
 	{ //draw the background:
 		//To simulate the 'infinite tiling' behavior this code draws the background as four screen-sized chunks,
@@ -194,9 +201,9 @@ void PPU466::draw(glm::uvec2 const &drawable_size) const {
 		}
 	}
 
-	draw_sprites(0x00); //draw sprites with priority == 0 ('in front' sprites)
+	// draw_sprites(0x00); //draw sprites with priority == 0 ('in front' sprites)
 
-	assert(triangle_strip.size() == TristripSize && "Triangle strip size was estimated exactly.");
+	// assert(triangle_strip.size() == TristripSize && "Triangle strip size was estimated exactly.");
 
 	//-------------------------------------------------
 	//Upload at to GPU using PPUDataStream:
@@ -211,22 +218,51 @@ void PPU466::draw(glm::uvec2 const &drawable_size) const {
 	{ //build + upload tile table texture:
 		//interpret tiles and build a 128 x 128 index texture:
 		static std::array< uint8_t, 128 * 128 > data;
-		for (uint32_t i = 0; i < tile_table.size(); ++i) {
-			Tile const &tile = tile_table[i];
-
-			//location of tile in the texture:
-			uint32_t ox = (i % 16) * 8;
-			uint32_t oy = (i / 16) * 8;
-
-			//copy tile indices into texture:
-			for (uint32_t y = 0; y < 8; ++y) {
-				for (uint32_t x = 0; x < 8; ++x) {
-					data[ox+x + 128 * (oy+y)] =
-						  ((tile.bit0[y] >> x) & 1)
-						| ((tile.bit1[y] >> x) & 1) << 1;
-				}
+		int savemults = 128 * 128;
+		int acc = 0;
+		for (int i = 0; i<savemults; i++){
+			data[i] = acc;
+			if (acc == 3){
+				acc = 0;
+			}else{
+				acc++;
 			}
 		}
+		
+		
+		
+	
+		// for (uint32_t i = 0; i < tile_table.size(); ++i) {
+		// 	// Tile const &tile = tile_table[i];
+
+		// 	//location of tile in the texture:
+		// 	uint32_t ox = (i % 16) * 8;
+		// 	uint32_t oy = (i / 16) * 8;
+
+		// 	//copy tile indices into texture:
+			
+		// 	for (uint32_t y = 0; y < 8; ++y) {
+		// 		for (uint32_t x = 0; x < 8; ++x) {
+		// 			// std::cout << std::endl;
+		// 			// std::cout << "ox+x + 128 * (oy+y) = " << ox+x + 128 * (oy+y) << std::endl;
+		// 			// std::cout << "tile.bit0[y]: " << tile.bit0[y] << std::endl;
+		// 			// std::cout << "tile.bit1[y]: " << tile.bit1[y] << std::endl;
+		// 			// std::cout << "((tile.bit0[y] >> x) & 1): " << ((tile.bit0[y] >> x) & 1) << std::endl;
+		// 			// std::cout << "((tile.bit1[y] >> x) & 1) << 1: " << ((tile.bit1[y] >> x) & 1) << 1 << std::endl;
+		// 			data[ox+x + 128 * (oy+y)] = 3;
+		// 			// data[ox+x + 128 * (oy+y)] =
+		// 			// 	  ((tile.bit0[y] >> x) & 1)
+		// 			// 	| ((tile.bit1[y] >> x) & 1) << 1;
+		// 			if (max < ox+x + 128 * (oy+y)){
+		// 				max = ox+x + 128 * (oy+y);
+		// 			}
+		// 			acc++;
+		// 		}
+		// 	}
+			
+		// }
+		// std::cout << "acc: " << acc << std::endl;
+		// std::cout << "max: " << max << std::endl;
 
 		glBindTexture(GL_TEXTURE_2D, data_stream->tile_tex);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8UI, 128, 128, 0, GL_RED_INTEGER, GL_UNSIGNED_BYTE, data.data());
@@ -286,6 +322,8 @@ void PPU466::draw(glm::uvec2 const &drawable_size) const {
 	//also restore viewport, since earlier scaling code messed with it:
 	glViewport(old_viewport[0], old_viewport[1], old_viewport[2], old_viewport[3]);
 
+	// int tester = 5;
+	// glDrawPixels(1, 1, GL_RED, GL_INT, &tester);
 	GL_ERRORS();
 }
 
